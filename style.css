@@ -103,6 +103,9 @@ li {
 
 .btn:hover {
     background-color: var(--back);
+    color: white;
+        transform:scale(1.1);
+
 }
 
 img {
