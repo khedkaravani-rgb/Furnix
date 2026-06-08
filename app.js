@@ -32,13 +32,25 @@ document.addEventListener('keydown', (e) => {
 const CART_KEY = 'furnix_shopping_cart';
 const WISHLIST_KEY = 'furnix_wishlist';
 
+const memoryStore = {};
+
 function getStorageData(key) {
-    const data = localStorage.getItem(key);
-    return data ? JSON.parse(data) : [];
+    try {
+        const data = localStorage.getItem(key);
+        return data ? JSON.parse(data) : [];
+    } catch (e) {
+        console.warn('LocalStorage blocked, falling back to memory store:', e);
+        return memoryStore[key] || [];
+    }
 }
 
 function setStorageData(key, data) {
-    localStorage.setItem(key, JSON.stringify(data));
+    try {
+        localStorage.setItem(key, JSON.stringify(data));
+    } catch (e) {
+        console.warn('LocalStorage blocked, falling back to memory store:', e);
+        memoryStore[key] = data;
+    }
 }
 
 function getCart() {

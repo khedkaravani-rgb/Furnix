@@ -143,8 +143,13 @@
 
         // Helper: get wishlist from localStorage (using existing function from app.js)
         function getWishlist() {
-            const data = localStorage.getItem('furnix_wishlist');
-            return data ? JSON.parse(data) : [];
+            try {
+                const data = localStorage.getItem('furnix_wishlist');
+                return data ? JSON.parse(data) : [];
+            } catch (e) {
+                console.warn('LocalStorage blocked:', e);
+                return [];
+            }
         }
 
         // Helper: check if product is in wishlist
