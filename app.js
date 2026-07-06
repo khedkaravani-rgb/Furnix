@@ -357,6 +357,21 @@ if (cardExpiryInput) {
     });
 }
 
+function isValidLuhn(digitsOnly) {
+    let sum = 0;
+    let shouldDouble = false;
+    for (let i = digitsOnly.length - 1; i >= 0; i--) {
+        let digit = parseInt(digitsOnly.charAt(i), 10);
+        if (shouldDouble) {
+            digit *= 2;
+            if (digit > 9) digit -= 9;
+        }
+        sum += digit;
+        shouldDouble = !shouldDouble;
+    }
+    return sum % 10 === 0;
+}
+
 const placeOrderBtn = document.getElementById('placeOrderBtn');
 if (placeOrderBtn) {
     placeOrderBtn.addEventListener('click', () => {
@@ -373,8 +388,45 @@ if (placeOrderBtn) {
             const cardNumber = document.getElementById('cardNumber').value.trim();
             const expiry = document.getElementById('cardExpiry').value.trim();
             const cvv = document.getElementById('cardCvv').value.trim();
+
             if (!cardNumber || !expiry || !cvv) {
                 alert('Please fill in your card details.');
+                return;
+            }
+
+            const digitsOnly = cardNumber.replace(/\s/g, '');
+            if (!/^\d{13,19}$/.test(digitsOnly) || !isValidLuhn(digitsOnly)) {
+                alert('Please enter a valid card number.');
+                return;
+            }
+
+            const expiryMatch = expiry.match(/^(\d{2})\s*\/\s*(\d{2})$/);
+            if (!expiryMatch) {
+                alert('Please enter a valid expiry date (MM / YY).');
+                return;
+            }
+            const expMonth = parseInt(expiryMatch[1], 10);
+            const expYear = 2000 + parseInt(expiryMatch[2], 10);
+            if (expMonth < 1 || expMonth > 12) {
+                alert('Please enter a valid expiry month (01-12).');
+                return;
+            }
+            const now = new Date();
+            const currentMonth = now.getMonth() + 1;
+            const currentYear = now.getFullYear();
+            const expiryEnd = new Date(expYear, expMonth, 0, 23, 59, 59); // last day of expiry month
+            if (expiryEnd < now || (expYear < currentYear) || (expYear === currentYear && expMonth < currentMonth)) {
+                alert('This card has expired. Please use a valid card.');
+                return;
+            }
+            // Reject unreasonably far-future dates (basic sanity check, e.g. typo like 99)
+            if (expYear > currentYear + 20) {
+                alert('Please enter a valid expiry date.');
+                return;
+            }
+
+            if (!/^\d{3,4}$/.test(cvv)) {
+                alert('Please enter a valid CVV (3-4 digits).');
                 return;
             }
         }
